@@ -6,7 +6,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.config import FRONTEND_ORIGIN, STATIC_DIR
 from app.db import init_db
-from app.routers import auth
+from app.routers import auth, chat
 
 
 @asynccontextmanager
@@ -26,6 +26,7 @@ app.add_middleware(
 )
 
 app.include_router(auth.router)
+app.include_router(chat.router)
 
 
 @app.get("/api/health")
