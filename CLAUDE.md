@@ -8,7 +8,7 @@ The available documents are covered in the catalog.json file in the project root
 
 @catalog.json
 
-The current implementation supports all 11 document types via AI chat with full user authentication and document persistence.
+The current implementation supports all 11 document types via AI chat, with JWT-based user authentication. Document persistence is planned but not yet built (see Planned section below).
 
 ## Development process
 
@@ -73,33 +73,28 @@ Backend available at http://localhost:8000
 - Download button appears when all required fields are gathered
 
 ### Completed (PL-6)
-- Support for all 11 document types from catalog.json
-- AI detects document type from user requests and routes accordingly
-- Dedicated preview/PDF components for Mutual NDA, Cloud Service Agreement, Pilot Agreement
-- Generic preview/PDF components for remaining document types (Design Partner, SLA, Professional Services, Partnership, Software License, DPA, BAA, AI Addendum)
-- Auto-focus chat input after sending messages
-- AI always asks follow-on questions when more information is needed
-
-### Completed (PL-7)
-- Functional user authentication with JWT tokens in HttpOnly cookies
-- User signup and signin with email/password (bcrypt password hashing)
-- Document persistence - users can save documents to their account
-- My Documents modal to view, load, and delete saved documents
-- User menu with sign out functionality
-- New Document button to start fresh
-- Auth context for managing user state across the app
-- Protected document save/load endpoints
+- Support for all 11 document types from catalog.json, via a declarative per-type field/party registry (`backend/app/document_types.py`, mirrored on the frontend in `frontend/src/lib/document-types.ts`) rather than one-off per-type code
+- The AI detects which document type the user wants from the conversation (or asks if it's unclear); if the user asks for something outside the catalog, it explains that and suggests the closest supported type before proceeding
+- One generic, data-driven cover-page component (`DocumentCoverPage.tsx`) renders every type's fields and signature block; the Mutual NDA keeps its original bespoke layout for its term-length checkboxes
+- One generic Standard Terms renderer (`StandardTerms.tsx`), fed by per-type legal text derived from the actual `templates/*.md` files, with the fields each type tracks rendered as live tooltip tokens
+- The AI always asks a specific follow-up question whenever required fields are still missing, rather than trailing off
+- Fixed chat input text being invisible while typing in dark mode (missing explicit text/background color)
 
 ### Current API Endpoints
 - `POST /api/auth/signup` - Create new user account
 - `POST /api/auth/signin` - Sign in and receive JWT cookie
 - `POST /api/auth/signout` - Clear auth cookie
 - `GET /api/auth/me` - Get current user info
-- `GET /api/documents` - List user's saved documents (auth required)
-- `POST /api/documents` - Save new document (auth required)
-- `GET /api/documents/{id}` - Get specific document (auth required)
-- `PUT /api/documents/{id}` - Update document (auth required)
-- `DELETE /api/documents/{id}` - Delete document (auth required)
 - `GET /api/chat/greeting` - Get AI greeting
 - `POST /api/chat/message` - Send chat message and get AI response
 - `GET /api/health` - Health check
+
+## Planned (not yet implemented)
+
+### PL-7 (planned)
+- Document persistence - users can save documents to their account
+- My Documents modal to view, load, and delete saved documents
+- New Document button to start fresh
+- Protected document save/load endpoints (`GET/POST /api/documents`, `GET/PUT/DELETE /api/documents/{id}`)
+
+(User signup/signin/signout, JWT HttpOnly cookie auth, and the sign-out user menu are already implemented — see PL-4 above and `frontend/src/components/AuthBar.tsx`.)

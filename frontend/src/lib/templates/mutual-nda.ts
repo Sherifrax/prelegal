@@ -1,7 +1,4 @@
-export interface StandardTermSection {
-  title: string;
-  body: string;
-}
+import { StandardTermSection } from "../document-types";
 
 // Transcribed from Common Paper Mutual NDA Standard Terms v1.0
 // (../../templates/Mutual-NDA.md). {{Field}} tokens mark defined terms
