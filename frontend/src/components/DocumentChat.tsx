@@ -2,15 +2,15 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { ChatMessage, fetchGreeting, sendChatMessage } from "@/lib/chat";
-import { NdaFormData } from "@/lib/types";
+import { DocumentData } from "@/lib/types";
 
-export default function NdaChat({
+export default function DocumentChat({
   data,
   onDataChange,
   onCompleteChange,
 }: {
-  data: NdaFormData;
-  onDataChange: (data: NdaFormData) => void;
+  data: DocumentData;
+  onDataChange: (data: DocumentData) => void;
   onCompleteChange: (complete: boolean) => void;
 }) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -95,7 +95,7 @@ export default function NdaChat({
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Type your answer…"
-          className="flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-[#209dd7] focus:outline-none"
+          className="flex-1 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-[#209dd7] focus:outline-none"
           disabled={isSending}
         />
         <button

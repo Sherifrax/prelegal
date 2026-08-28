@@ -1,4 +1,4 @@
-from app.schemas_nda import NdaFormData
+from app.schemas_documents import DocumentData
 
 
 def test_greeting_returns_a_message(client):
@@ -8,7 +8,7 @@ def test_greeting_returns_a_message(client):
 
 
 def test_message_returns_reply_and_merged_data(client, monkeypatch):
-    merged = NdaFormData(purpose="Evaluating a partnership")
+    merged = DocumentData(doc_type="mutual-nda", fields={"purpose": "Evaluating a partnership"})
 
     def fake_run_chat_turn(messages, current_data):
         assert messages == [{"role": "user", "content": "Hi"}]
@@ -20,14 +20,15 @@ def test_message_returns_reply_and_merged_data(client, monkeypatch):
         "/api/chat/message",
         json={
             "messages": [{"role": "user", "content": "Hi"}],
-            "current_data": NdaFormData().model_dump(by_alias=True),
+            "current_data": DocumentData().model_dump(by_alias=True),
         },
     )
 
     assert response.status_code == 200
     body = response.json()
     assert body["reply"] == "Got it, thanks!"
-    assert body["data"]["purpose"] == "Evaluating a partnership"
+    assert body["data"]["fields"]["purpose"] == "Evaluating a partnership"
+    assert body["data"]["docType"] == "mutual-nda"
     assert body["isComplete"] is False
 
 
@@ -43,7 +44,7 @@ def test_message_without_api_key_returns_503(client, monkeypatch):
         "/api/chat/message",
         json={
             "messages": [{"role": "user", "content": "Hi"}],
-            "current_data": NdaFormData().model_dump(by_alias=True),
+            "current_data": DocumentData().model_dump(by_alias=True),
         },
     )
 

@@ -1,5 +1,5 @@
-import NdaCreator from "@/components/NdaCreator";
+import DocumentCreator from "@/components/DocumentCreator";
 
 export default function Page() {
-  return <NdaCreator />;
+  return <DocumentCreator />;
 }

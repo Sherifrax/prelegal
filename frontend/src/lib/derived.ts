@@ -1,7 +1,10 @@
-import { NdaFormData } from "./types";
+import { DocumentData } from "./types";
+import { DocumentTypeMeta } from "./document-types";
 
-export function formatEffectiveDate(isoDate: string): string {
-  if (!isoDate) return "[Today's date]";
+export type DefinedTermValues = Record<string, string>;
+
+export function formatDate(isoDate: string | undefined): string {
+  if (!isoDate) return "[Not yet specified]";
   const date = new Date(`${isoDate}T00:00:00`);
   if (Number.isNaN(date.getTime())) return isoDate;
   return date.toLocaleDateString("en-US", {
@@ -11,40 +14,50 @@ export function formatEffectiveDate(isoDate: string): string {
   });
 }
 
-export function formatMndaTerm(data: NdaFormData): string {
-  if (data.mndaTermType === "until-terminated") {
+// These two MNDA fields compose a full sentence from a type + a conditional
+// year count, rather than mapping 1:1 onto a token — every other field/type
+// combination below maps its raw value straight onto its token.
+function formatMndaTerm(fields: Record<string, string>): string {
+  if (fields.mnda_term_type === "until-terminated") {
     return "the date this MNDA is terminated in accordance with its terms";
   }
-  const years = data.mndaTermYears || 1;
+  const years = Number(fields.mnda_term_years) || 1;
   const unit = years === 1 ? "year" : "years";
   return `${years} ${unit} from the Effective Date`;
 }
 
-export function formatConfidentialityTerm(data: NdaFormData): string {
-  if (data.confidentialityTermType === "perpetuity") {
+function formatConfidentialityTerm(fields: Record<string, string>): string {
+  if (fields.confidentiality_term_type === "perpetuity") {
     return "in perpetuity";
   }
-  const years = data.confidentialityTermYears || 1;
+  const years = Number(fields.confidentiality_term_years) || 1;
   const unit = years === 1 ? "year" : "years";
   return `${years} ${unit} from the Effective Date, but in the case of trade secrets until the Confidential Information is no longer considered a trade secret under applicable laws`;
 }
 
-export interface DefinedTermValues {
-  Purpose: string;
-  "Effective Date": string;
-  "MNDA Term": string;
-  "Term of Confidentiality": string;
-  "Governing Law": string;
-  Jurisdiction: string;
-}
+export function buildDefinedTermValues(
+  data: DocumentData,
+  spec: DocumentTypeMeta
+): DefinedTermValues {
+  const values: DefinedTermValues = {};
 
-export function buildDefinedTermValues(data: NdaFormData): DefinedTermValues {
-  return {
-    Purpose: data.purpose || "[Purpose not yet specified]",
-    "Effective Date": formatEffectiveDate(data.effectiveDate),
-    "MNDA Term": formatMndaTerm(data),
-    "Term of Confidentiality": formatConfidentialityTerm(data),
-    "Governing Law": data.governingLaw || "[Governing law not yet specified]",
-    Jurisdiction: data.jurisdiction || "[Jurisdiction not yet specified]",
-  };
+  for (const field of spec.fields) {
+    if (spec.id === "mutual-nda" && field.key === "mnda_term_type") {
+      values[field.label] = formatMndaTerm(data.fields);
+      continue;
+    }
+    if (spec.id === "mutual-nda" && field.key === "confidentiality_term_type") {
+      values[field.label] = formatConfidentialityTerm(data.fields);
+      continue;
+    }
+
+    const raw = data.fields[field.key] ?? "";
+    if (field.fieldType === "date") {
+      values[field.label] = formatDate(raw);
+    } else {
+      values[field.label] = raw || `[${field.label} not yet specified]`;
+    }
+  }
+
+  return values;
 }

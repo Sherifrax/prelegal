@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 from app.config import OPENROUTER_API_KEY
 from app.llm import GREETING, run_chat_turn
-from app.schemas_nda import CamelModel, NdaFormData
+from app.schemas_documents import CamelModel, DocumentData
 
 router = APIRouter(prefix="/api/chat", tags=["chat"])
 
@@ -17,12 +17,12 @@ class ChatMessage(BaseModel):
 
 class ChatRequest(CamelModel):
     messages: list[ChatMessage]
-    current_data: NdaFormData
+    current_data: DocumentData
 
 
 class ChatResponse(CamelModel):
     reply: str
-    data: NdaFormData
+    data: DocumentData
     is_complete: bool
 
 

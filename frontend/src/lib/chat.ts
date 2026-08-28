@@ -1,4 +1,4 @@
-import { NdaFormData } from "./types";
+import { DocumentData } from "./types";
 
 export type ChatRole = "user" | "assistant";
 
@@ -9,7 +9,7 @@ export interface ChatMessage {
 
 export interface ChatMessageResult {
   reply: string;
-  data: NdaFormData;
+  data: DocumentData;
   isComplete: boolean;
 }
 
@@ -32,7 +32,7 @@ export async function fetchGreeting(): Promise<string> {
 
 export async function sendChatMessage(
   messages: ChatMessage[],
-  currentData: NdaFormData
+  currentData: DocumentData
 ): Promise<ChatMessageResult> {
   const response = await fetch("/api/chat/message", {
     method: "POST",
